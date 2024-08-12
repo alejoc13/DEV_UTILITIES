@@ -3,7 +3,7 @@ import json
 from typing import Tuple, List, Optional
 import time
 
-LEN_MOVEMENT = 150
+
 
 
 def createColumnDict(columns_info: List[dict], columns_names: Optional[set] = None) -> dict:
@@ -45,6 +45,8 @@ class Smartsheet:
             'Content-Type': 'application/json'
         }
         self.queryNotFound = "ignoreRowsNotFound=true"
+        self.len_movement = 500
+        self.allow_movement = False
 
     def getSheet(self, sheetId: int) -> Tuple[List[dict], List[dict]]:
         """Function to obtain sheet data and columns info from smartsheet 
@@ -120,10 +122,29 @@ class Smartsheet:
         data, _ = self.getSheet(sheetId=originId)
         data = list(filter(lambda row: row["rowNumber"] != 1, data))
         ids_to_move = [row["id"] for row in data]
-        url = f"https://api.smartsheet.com/2.0/sheets/{originId}/rows/move?ignoreRowsNotFound=true"
-        print(len(ids_to_move))
-        for i in range(0, len(ids_to_move), LEN_MOVEMENT):
-            ids_lot = ids_to_move[i:i+LEN_MOVEMENT]
+        url = f"https://api.smartsheet.com/2.0/sheets/{originId}/rows/move?{self.queryNotFound}"
+        len_movement = self.len_movement
+        control = self.allow_movement
+        for i in range(0, len(ids_to_move), len_movement):
+            while control == False:
+                print("test of amount of rows amount is in progress")
+                ids_lot = ids_to_move[i:i+len_movement]
+                print(f"try to move {len(ids_lot)} rows")
+                payload = {
+                    "rowIds": ids_lot,
+                    "to": {
+                        "sheetId": targetId
+                    }
+                }
+                response = requests.post(
+                    url=url, headers=self.header, data=json.dumps(payload))
+                if response.status_code != 200:
+                    len_movement -= 50
+                    print(f"new lot of rows is seted in {len_movement}")
+                else: 
+                    print(f"row will be moved in lots of {len_movement}")
+                    control = True
+            ids_lot = ids_to_move[i:i+len_movement]
             print(f"moving {len(ids_lot)} rows")
             payload = {
                 "rowIds": ids_lot,
@@ -156,9 +177,28 @@ class Smartsheet:
         data = list(filter(lambda row: (row["cells"][use_to_filter[column_name]["index"]].get("value") in criteria["values"])
                            and (row["cells"][use_to_filter[column_name]["index"]].get("value") in criteria["values"] not in AVOID_LINES), data))
         ids_to_move = [row["id"] for row in data]
-        url = f"https://api.smartsheet.com/2.0/sheets/{originId}/rows/move?ignoreRowsNotFound=true"
-        for i in range(0, len(ids_to_move), LEN_MOVEMENT):
-            ids_lot = ids_to_move[i:i+LEN_MOVEMENT]
+        url = f"https://api.smartsheet.com/2.0/sheets/{originId}/rows/move?{self.queryNotFound}"
+        len_movement = self.len_movement
+        for i in range(0, len(ids_to_move), len_movement):
+            while control == False:
+                print("test of amount of rows amount is in progress")
+                ids_lot = ids_to_move[i:i+len_movement]
+                print(f"try to move {len(ids_lot)} rows")
+                payload = {
+                    "rowIds": ids_lot,
+                    "to": {
+                        "sheetId": targetId
+                    }
+                }
+                response = requests.post(
+                    url=url, headers=self.header, data=json.dumps(payload))
+                if response.status_code != 200:
+                    len_movement -= 50
+                    print(f"new lot of rows is seted in {len_movement}")
+                else: 
+                    print(f"row will be moved in lots of {len_movement}")
+                    control = True
+            ids_lot = ids_to_move[i:i+len_movement]
             payload = {
                 "rowIds": ids_lot,
                 "to": {
@@ -362,9 +402,28 @@ class Smartsheet:
         data = list(filter(lambda row: (row["cells"][use_to_filter[column_name]["index"]].get("value") in criteria["values"])
                            and (row["cells"][use_to_filter[column_name]["index"]].get("value") in criteria["values"] not in AVOID_LINES), data))
         ids_to_move = [row["id"] for row in data]
-        url = f"https://api.smartsheet.com/2.0/sheets/{originId}/rows/copy?ignoreRowsNotFound=true&include=all"
-        for i in range(0, len(ids_to_move), LEN_MOVEMENT):
-            ids_lot = ids_to_move[i:i+LEN_MOVEMENT]
+        url = f"https://api.smartsheet.com/2.0/sheets/{originId}/rows/copy?{self.queryNotFound}&include=all"
+        len_movement = self.len_movement
+        for i in range(0, len(ids_to_move), len_movement):
+            while control == False:
+                print("test of amount of rows amount is in progress")
+                ids_lot = ids_to_move[i:i+len_movement]
+                print(f"try to move {len(ids_lot)} rows")
+                payload = {
+                    "rowIds": ids_lot,
+                    "to": {
+                        "sheetId": targetId
+                    }
+                }
+                response = requests.post(
+                    url=url, headers=self.header, data=json.dumps(payload))
+                if response.status_code != 200:
+                    len_movement -= 50
+                    print(f"new lot of rows is seted in {len_movement}")
+                else: 
+                    print(f"row will be moved in lots of {len_movement}")
+                    control = True
+            ids_lot = ids_to_move[i:i+len_movement]
             payload = {
                 "rowIds": ids_lot,
                 "to": {
@@ -399,9 +458,10 @@ class Smartsheet:
             Optional criteria (dict): {column: name of the column, values:listo of values to move lines to another sheet} if not criteria all sheet will be deleted
         """
         url = f"https://api.smartsheet.com/2.0/sheets/{sheetId}/rows?ids="
-        deleteSteps = 100
+        deleteSteps = self.len_movement
         data, columns = self.getSheet(sheetId=sheetId)
         AVOID_LINES = ["xxx", "XXX"]
+        control = self.allow_movement
         if not criteria:
             print("deleting full sheet")
             data, _ = self.getSheet(sheetId=sheetId)
@@ -424,7 +484,7 @@ class Smartsheet:
                 print("no ids to delete")
                 continue
             temp_url = url + text_format
-            temp_url += "&ignoreRowsNotFound=true"
+            temp_url += f"&{self.queryNotFound}"
             response = requests.delete(url=temp_url, headers=self.header)
             if response.status_code == 200:
                 print("success deleting rows")
