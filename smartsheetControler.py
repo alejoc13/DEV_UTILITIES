@@ -45,7 +45,7 @@ class Smartsheet:
             'Content-Type': 'application/json'
         }
         self.queryNotFound = "ignoreRowsNotFound=true"
-        self.len_movement = 500
+        self.len_movement = 800
         self.allow_movement = False
 
     def getSheet(self, sheetId: int) -> Tuple[List[dict], List[dict]]:
