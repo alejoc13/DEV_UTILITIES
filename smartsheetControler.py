@@ -212,8 +212,10 @@ class Smartsheet:
             else:
                 print("Success!")
 
-    def createSheetCopy(self, sheetId: int, destinationId: int, destinationType: str, sheet_name: str) -> Optional[int]:
+    def createSheetCopy(self, sheetId: int, destinationId: int, destinationType: str, sheet_name: str, include:list = None) -> Optional[int]:
         url = f"https://api.smartsheet.com/2.0/sheets/{sheetId}/copy"
+        if include:
+            url += f"?include={','.join(include)}" 
         payload = {
             "destinationType": destinationType,
             "destinationId": destinationId,
