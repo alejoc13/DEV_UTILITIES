@@ -48,7 +48,7 @@ class Smartsheet:
         self.len_movement = 800
         self.allow_movement = False
 
-    def getSheet(self, sheetId: int) -> Tuple[List[dict], List[dict]]:
+    def getSheet(self, sheetId: int,return_name:bool = False) -> Tuple[List[dict], List[dict]]:
         """Function to obtain sheet data and columns info from smartsheet 
 
         Args:
@@ -63,8 +63,12 @@ class Smartsheet:
             print("no conected")
             return None, None
         response = response.json()
+        print(response)
         print(f"conected to {response['name']}")
-        return response["rows"], response["columns"]
+        if return_name == True:
+            return response["rows"], response["columns"], response["name"]
+        else:
+            return response["rows"], response["columns"]
 
     def createNewRow(self, sheetId: int, payload: dict) -> None:
         """
@@ -309,8 +313,9 @@ class Smartsheet:
                         print(response.text)
                     else:
                         print("success")
-                except:
+                except ValueError as e:
                     print(f"fail with {current_name}")
+                    print(e)
 
     def delete_columns(self, sheetIds: list, list_columns: set) -> None:
         for sheetId in sheetIds:
