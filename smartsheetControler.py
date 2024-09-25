@@ -45,7 +45,7 @@ class Smartsheet:
             'Content-Type': 'application/json'
         }
         self.queryNotFound = "ignoreRowsNotFound=true"
-        self.len_movement = 800
+        self.len_movement = 500
         self.allow_movement = False
 
     def getSheet(self, sheetId: int,return_name:bool = False) -> Tuple[List[dict], List[dict]]:
@@ -181,8 +181,13 @@ class Smartsheet:
         data = list(filter(lambda row: (row["cells"][use_to_filter[column_name]["index"]].get("value") in criteria["values"])
                            and (row["cells"][use_to_filter[column_name]["index"]].get("value") in criteria["values"] not in AVOID_LINES), data))
         ids_to_move = [row["id"] for row in data]
+        print(f"is necessary to move {len(ids_to_move)} rows")
+        if len(ids_to_move) == 0:
+            print("nothing to move")
+            return 
         url = f"https://api.smartsheet.com/2.0/sheets/{originId}/rows/move?{self.queryNotFound}"
         len_movement = self.len_movement
+        control = self.allow_movement
         for i in range(0, len(ids_to_move), len_movement):
             while control == False:
                 print("test of amount of rows amount is in progress")
