@@ -45,7 +45,7 @@ class Smartsheet:
             'Content-Type': 'application/json'
         }
         self.queryNotFound = "ignoreRowsNotFound=true"
-        self.len_movement = 500
+        self.len_movement = 800
         self.allow_movement = False
 
     def getSheet(self, sheetId: int,return_name:bool = False) -> Tuple[List[dict], List[dict]]:
@@ -63,7 +63,6 @@ class Smartsheet:
             print("no conected")
             return None, None
         response = response.json()
-        print(response)
         print(f"conected to {response['name']}")
         if return_name == True:
             return response["rows"], response["columns"], response["name"]
