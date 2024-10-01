@@ -45,7 +45,7 @@ class Smartsheet:
             'Content-Type': 'application/json'
         }
         self.queryNotFound = "ignoreRowsNotFound=true"
-        self.len_movement = 800
+        self.len_movement = 500
         self.allow_movement = False
 
     def getSheet(self, sheetId: int,return_name:bool = False) -> Tuple[List[dict], List[dict]]:
@@ -590,3 +590,25 @@ class Smartsheet:
         else:
             print("not valid action")
             return None
+    
+    def crateNewSheet(self,sheetName:str, columns:dict, folderId:int,returnId = False) -> Optional[int]:
+        url = f"https://api.smartsheet.com/2.0/folders/{folderId}/sheets"
+        payload = {
+            "name": sheetName,
+            "columns": columns
+        }
+        json_payload = json.dumps(payload)
+        response =  requests.post(url=url,headers=self.header,data = json_payload)
+
+        if response.status_code != 200:
+            print(response.text)
+            return None
+        else:
+            print("Success!")
+        if returnId:
+            response = response.json()
+            newId = response["result"]["id"]
+            return newId
+        else:
+            return None
+        
