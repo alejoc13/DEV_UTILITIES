@@ -279,6 +279,7 @@ class Smartsheet:
                 response = requests.post(
                     url=url, headers=self.header, data=json.dumps([new_col]))
                 if response.status_code != 200:
+                    print(f"failed on {new_col['title']}")
                     print(f"fialied to create columns {response.text}")
                 else:
                     print(f"success creating {new_col['title']}")
@@ -352,7 +353,7 @@ class Smartsheet:
             else:
                 print("success")
 
-    def getAttachmentsList(self, sheetId: int, rowId: int) -> Optional[list]:
+    def getRowAttachmentsList(self, sheetId: int, rowId: int) -> Optional[list]:
         print("obtaining Attachments list")
         url = f"https://api.smartsheet.com/2.0/sheets/{sheetId}/rows/{rowId}/attachments?includeAll=true"
         response = requests.get(url=url, headers=self.header)
