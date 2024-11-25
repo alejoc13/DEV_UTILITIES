@@ -476,8 +476,7 @@ class Smartsheet:
         control = self.allow_movement
         if not criteria:
             print("deleting full sheet")
-            data, _ = self.getSheet(sheetId=sheetId)
-            idsLot = [str(row["id"]) for row in data if row["rowNumber"] != 1]
+            idsLot = [str(row["id"]) for row in data]
         else:
             print("preparing lines to be deleted")
             column_name = criteria["column"]
@@ -487,28 +486,31 @@ class Smartsheet:
             data = list(filter(lambda row: (row["cells"][use_to_filter[column_name]["index"]].get("value") in criteria["values"])
                                and (row["cells"][use_to_filter[column_name]["index"]].get("value") in criteria["values"] not in AVOID_LINES), data))
             idsLot = [str(row["id"]) for row in data if row["rowNumber"] != 1]
-
-        for index in range(0, len(idsLot), deleteSteps):
-            while control == False:
-                print(f"try with {deleteSteps} rows")
-                lotToDelete = idsLot[index:index+deleteSteps]
-                if len(lotToDelete) > 0:
-                    text_format = ",".join(lotToDelete)
-                else:
-                    print("no ids to delete")
-                    continue
-                temp_url = url + text_format
-                temp_url += f"&{self.queryNotFound}"
-                response = requests.delete(url=temp_url, headers=self.header)
-                if response.status_code != 200:
-                    deleteSteps-=50
-                    control = False
-                else:
-                    print(f"rows will be deleted on lots of {deleteSteps}")
-                    control = True
-                    break
-            
+        index = 0
+        while control == False:
             lotToDelete = idsLot[index:index+deleteSteps]
+            print(f"try with {deleteSteps} rows")
+            
+            if len(lotToDelete) > 0:
+                text_format = ",".join(lotToDelete)
+            else:
+                print("no ids to delete")
+                continue
+            temp_url = url + text_format
+            temp_url += f"&{self.queryNotFound}"
+            response = requests.delete(url=temp_url, headers=self.header)
+            if response.status_code != 200:
+                deleteSteps-=50
+                lotToDelete = idsLot[index:index+deleteSteps]
+                control = False
+            else:
+                print(f"rows will be deleted on lots of {deleteSteps}")
+                control = True
+                break
+        
+        for index in range(0, len(idsLot), deleteSteps):
+            lotToDelete = idsLot[index:index+deleteSteps]
+                
             if len(lotToDelete) > 0:
                     text_format = ",".join(lotToDelete)
             else:
@@ -521,6 +523,7 @@ class Smartsheet:
                 print("success deleting rows")
             else:
                 print(response.text)
+
 
     def createUsersGroup(self, name: str, emails: list, description: str = None) -> None:
         """Use it to create groups in smartsheet to share workspaces, sheets and others
