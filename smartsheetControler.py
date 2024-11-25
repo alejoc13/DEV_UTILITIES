@@ -489,9 +489,28 @@ class Smartsheet:
             idsLot = [str(row["id"]) for row in data if row["rowNumber"] != 1]
 
         for index in range(0, len(idsLot), deleteSteps):
+            while control == False:
+                print(f"try with {deleteSteps} rows")
+                lotToDelete = idsLot[index:index+deleteSteps]
+                if len(lotToDelete) > 0:
+                    text_format = ",".join(lotToDelete)
+                else:
+                    print("no ids to delete")
+                    continue
+                temp_url = url + text_format
+                temp_url += f"&{self.queryNotFound}"
+                response = requests.delete(url=temp_url, headers=self.header)
+                if response.status_code != 200:
+                    deleteSteps-=50
+                    control = False
+                else:
+                    print(f"rows will be deleted on lots of {deleteSteps}")
+                    control = True
+                    break
+            
             lotToDelete = idsLot[index:index+deleteSteps]
             if len(lotToDelete) > 0:
-                text_format = ",".join(lotToDelete)
+                    text_format = ",".join(lotToDelete)
             else:
                 print("no ids to delete")
                 continue
