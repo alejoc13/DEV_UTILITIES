@@ -365,6 +365,17 @@ class Smartsheet:
             print("failed to obtain attacments")
             return None
 
+    def getSheetAttachmentsList(self,sheetId: int) -> Optional[list]:
+        print("Obtaining sheet attachments list")
+        url = f"https://api.smartsheet.com/2.0/sheets/{sheetId}/attachments?includeAll=true"
+        response = requests.get(url = url, headers=self.header)
+        if response.status_code == 200:
+            response = response.json()
+            return response["data"]
+        else:
+            print("failed obtaing attachments lsit of the sheet")
+            return None
+        
     def getAttachmentUrl(self, sheetId: int, attachmentId: int) -> Optional[dict]:
         print("Obtaining url to download document")
         url = f"https://api.smartsheet.com/2.0/sheets/{sheetId}/attachments/{attachmentId}"
@@ -523,7 +534,6 @@ class Smartsheet:
                 print("success deleting rows")
             else:
                 print(response.text)
-
 
     def createUsersGroup(self, name: str, emails: list, description: str = None) -> None:
         """Use it to create groups in smartsheet to share workspaces, sheets and others

@@ -226,6 +226,7 @@ $RECYCLE.BIN/
 *.lnk
 *.ipynb
 *.xlsx
+*.json
 
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,python,linux,jupyternotebooks
