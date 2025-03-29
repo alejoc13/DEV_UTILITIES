@@ -69,7 +69,7 @@ class Smartsheet:
         else:
             return response["rows"], response["columns"]
 
-    def createNewRow(self, sheetId: int, payload: dict) -> None:
+    def createNewRow(self, sheetId: int, payload: dict, return_id: bool = False) -> (int|None):
         """
         Create new rows in a sheet
         Args:
@@ -84,7 +84,13 @@ class Smartsheet:
         if response.status_code != 200:
             response = response.json()
             print(response)
-        return
+            return
+        if return_id == True:
+            response = response.json()
+            response = response["result"][0]["id"]
+            return response
+        else:
+            return
 
     def updateRows(self, sheetId: int, payload: dict) -> None:
         """
